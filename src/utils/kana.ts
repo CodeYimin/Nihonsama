@@ -363,11 +363,6 @@ const hiragana: IKana[] = [
     type: "handakuon",
   },
   {
-    kana: "っ",
-    roumaji: "(pause)",
-    type: "sokuon",
-  },
-  {
     kana: "きゃ",
     roumaji: "kya",
     type: "youon",
@@ -888,18 +883,8 @@ const hiragana: IKana[] = [
     type: "extended",
   },
   {
-    kana: "うぁ",
-    roumaji: "(wa)",
-    type: "extended",
-  },
-  {
     kana: "うぃ",
     roumaji: "wi",
-    type: "extended",
-  },
-  {
-    kana: "うぅ",
-    roumaji: "(wu)",
     type: "extended",
   },
   {
@@ -1359,11 +1344,6 @@ const katakana: IKana[] = [
     kana: "ポ",
     roumaji: "po",
     type: "handakuon",
-  },
-  {
-    kana: "ッ",
-    roumaji: "(pause)",
-    type: "sokuon",
   },
   {
     kana: "キャ",
@@ -1886,18 +1866,8 @@ const katakana: IKana[] = [
     type: "extended",
   },
   {
-    kana: "ウァ",
-    roumaji: "(wa)",
-    type: "extended",
-  },
-  {
     kana: "ウィ",
     roumaji: "wi",
-    type: "extended",
-  },
-  {
-    kana: "ウゥ",
-    roumaji: "(wu)",
     type: "extended",
   },
   {

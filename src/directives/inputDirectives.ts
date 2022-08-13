@@ -11,7 +11,7 @@ export const keepFocus: Action = (node) => {
 
   return {
     destroy() {
-      blurListener();
+      node.removeEventListener("blur", blurListener);
     }
   }
 };

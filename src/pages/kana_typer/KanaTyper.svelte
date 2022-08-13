@@ -1,30 +1,85 @@
 <script lang="ts">
-  import { keepFocus } from "../../directives/inputDirectives";
-  import { getRandomHiragana, type IKana } from "../../utils/kana";
+  import App from "../../App.svelte";
+import { getRandomHiragana, type IKana } from "../../utils/kana";
+  import type { EventWithTarget } from "../../utils/types";
   import Kana from "./components/Kana.svelte";
 
-  type KanaStruct = IKana & { correct?: boolean };
+  type KanaInfo = IKana & { correct?: boolean, id: number };
 
-  let kanas: KanaStruct[];
+  let kanaInfos: KanaInfo[];
+  let startingKanaIndex: number;
   let currentKanaIndex: number;
-  $: currentKana = kanas[currentKanaIndex];
+  $: currentKana = kanaInfos[currentKanaIndex];
 
-  let input: string;
+  let kanaElementsContainer: HTMLDivElement | undefined;
+
+  $: currentKanaIndex && adjustDisplayedKanas();
 
   function resetKanas() {
-    kanas = getRandomHiragana(50);
+    kanaInfos = getRandomHiragana(50).map((kana, i) => ({...kana, id: i}));
     currentKanaIndex = 0;
+    startingKanaIndex = 0;
   }
 
-  function handleInput() {
-    if (input.endsWith(" ")) {
-      // Check answer
-      currentKana.correct = input.slice(0, -1) === currentKana.roumaji;
-      kanas = kanas;
+  function adjustDisplayedKanas() {
+    if (!kanaElementsContainer) {
+      return;
+    }
 
-      // Reset input and go to next word
-      input = "";
+    const containerTop = kanaElementsContainer.getBoundingClientRect().top;
+    const containerLeft = kanaElementsContainer.getBoundingClientRect().left;
+
+    const kanaElements = [...kanaElementsContainer.children];
+
+    const thirdRowIndex = kanaElements.findIndex((e) => {
+      if (!e) {
+        return;
+      }
+
+      const eBounds = e.getBoundingClientRect();
+      return (
+        eBounds.left === containerLeft &&
+        (eBounds.top - containerTop) / eBounds.height === 2
+      );
+    });
+
+    if (currentKanaIndex - startingKanaIndex < thirdRowIndex) {
+      return;
+    }
+
+    const secondRowIndex = kanaElements.findIndex((e) => {
+      if (!e) {
+        return;
+      }
+
+      const eBounds = e.getBoundingClientRect();
+      return (
+        eBounds.left === containerLeft &&
+        (eBounds.top - containerTop) / eBounds.height === 1
+      );
+    });
+
+    startingKanaIndex += secondRowIndex;
+  }
+
+  function handleRoumajiKeypress(
+    event: EventWithTarget<HTMLSpanElement, KeyboardEvent>
+  ) {
+    const prevInput = event.currentTarget.textContent;
+    const key = event.key;
+
+    if (key === " " || key === "Enter") {
+      // Prevent enter key from creating a line break
+      event.preventDefault();
+
+      // Check answer
+      currentKana.correct = prevInput === currentKana.roumaji;
+      kanaInfos = kanaInfos;
+
+      // Go to next kana
       currentKanaIndex++;
+    } else if (prevInput && prevInput.length >= 3) {
+      event.preventDefault();
     }
   }
 
@@ -33,17 +88,20 @@
 
 <main>
   <h1>Kana Typer</h1>
-  <div id="words">
-    {#each kanas as kana, i}
-      <Kana {kana} active={kana === currentKana} correct={kana.correct} />
+  <div
+    class="words"
+    style:height={kanaElementsContainer ? `${[...kanaElementsContainer.children].at(0)?.getBoundingClientRect().height * 3}px` : ''}
+    bind:this={kanaElementsContainer}
+  >
+    {#each kanaInfos.slice(startingKanaIndex) as kana, i (kana.id)}
+      <Kana
+        {kana}
+        active={kana === currentKana}
+        correct={kana.correct}
+        onKeypress={handleRoumajiKeypress}
+      />
     {/each}
   </div>
-  <input
-    type="text"
-    use:keepFocus
-    bind:value={input}
-    on:input={handleInput}
-  />
 </main>
 
 <style>
@@ -56,17 +114,13 @@
     font-weight: 500;
   }
 
-  #words {
+  .words {
     font-size: 2em;
     margin: 2em auto;
     text-align: left;
-    width: 50%;
-  }
-
-  input {
-    text-align: center;
-    font-size: 2.5em;
-    border: none;
-    outline: none;
+    width: 75%;
+    overflow: hidden;
+    display: flex;
+    flex-wrap: wrap;
   }
 </style>
